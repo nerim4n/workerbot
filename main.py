@@ -1,10 +1,16 @@
+import pywikibot
 import requests
 from dateutil import parser
 import datetime
+from pywikibot.page import Page
+import re
+
 URL = "https://az.wikipedia.org/w/api.php"
+
 
 def chop_microseconds(delta):
     return delta - datetime.timedelta(microseconds=delta.microsecond)
+
 
 def get_data_from_api(params):
     try:
@@ -14,6 +20,7 @@ def get_data_from_api(params):
     except requests.exceptions.RequestException as e:
         print(f"Request error: {e}")
         return None
+
 
 def is_template_outdated(page):
     params = {
@@ -41,6 +48,15 @@ def is_template_outdated(page):
 
     return False
 
+
+def editPage(page):
+    wikipage = Page(pywikibot.Site(), page['title'])
+
+    wikipage.text = re.sub('\{\{[İ|i]ş gedir\}\}', '', wikipage.text, )
+    wikipage.save("7 gündür redaktə edilməyən məqalədən iş gedir şablonunun çıxarılması")
+    print(page['title'], 'məqaləsindən şablon silindi')
+
+
 def main():
     params = {
         "action": "query",
@@ -55,11 +71,14 @@ def main():
         return
 
     pages = data.get("query", {}).get("categorymembers", [])
+    print(len(pages), 'səhifə')
     for page in pages:
         if is_template_outdated(page):
-            print(u'\u2713', page['title'], "şablon silinməlidir")
+            editPage(page)
+        #  print(u'\u2713', page['title'], "şablon silinməlidir")
         else:
             print(u'\u2717', page['title'], "şablon silinməməlidir")
+
 
 if __name__ == "__main__":
     main()
