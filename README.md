@@ -1,4 +1,4 @@
-Q# Worker (İşçi)
+# Worker (İşçi)
 
 Code of my bot on Wikipedia
 
